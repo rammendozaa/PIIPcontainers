@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    command: '--default-authentication-plugin=mysql_native_password'
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
+      interval: 10s
+      retries: 6
+      timeout: 120s
+    container_name: PIIPDATABASE
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - './PIIPdocumentacion/database_tables/insertions:/docker-entrypoint-initdb.d/:rw'
+  api:
+    build: ./PIIPback
+    healthcheck:
+      test: curl --fail http://0.0.0.0:5000 || exit 1
+      interval: 20s
+      retries: 6
+      timeout: 240s
+    container_name: PIIPBACK
+    links:
+      - db
+    ports:
+      - 5000:5000
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - 5000      
+  client:
+    build: ./PIIPfront/piip_ipn_react
+    container_name: PIIPFRONT
+    ports:
+      - 3000:3000
+    depends_on:
+      api:
+        condition: service_healthy
