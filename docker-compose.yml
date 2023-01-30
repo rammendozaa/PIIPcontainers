@@ -16,7 +16,7 @@ services:
   api:
     build: ./PIIPback
     healthcheck:
-      test: curl --fail http://0.0.0.0:5000 || exit 1
+      test: curl --fail http://0.0.0.0:1234 || exit 1
       interval: 20s
       retries: 6
       timeout: 240s
@@ -24,12 +24,12 @@ services:
     links:
       - db
     ports:
-      - 5000:5000
+      - 1234:1234
     depends_on:
       db:
         condition: service_healthy
     expose:
-      - 5000      
+      - 1234      
   client:
     build: ./PIIPfront/piip_ipn_react
     container_name: PIIPFRONT
